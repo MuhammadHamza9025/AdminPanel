@@ -1,16 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Users = () => {
-    const [users, setusers] = useState([])
+    // const [users, setusers] = useState([])
+
+    const initialstate = {
+        state: 'not ready',
+        users: []
+    };
+    const reducer = (state, action) => {
+        switch (action.type) {
+
+            case 'notready':
+                return { ...state }
+
+            case 'ready':
+                return { ...state, state: 'ready', users: action.payload }
+        }
+
+    }
+    const [users, dispatch] = useReducer(reducer, initialstate)
 
 
 
     const fetchusers = async () => {
         const fetchapi = await fetch('https://backend-puce-zeta.vercel.app/users')
         const res = await fetchapi.json()
-        setusers(res)
+        dispatch({ type: 'ready', payload: res })
     }
     useEffect(() => {
         fetchusers()
@@ -92,27 +109,30 @@ const Users = () => {
                     <tbody>
 
                         {
-                            users?.map((items) => {
+                            users.state == 'ready' ?
+                                users.users?.map((items) => {
 
-                                return (
-                                    <>
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 ">
-                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                <span>{items.Username}</span>
-                                            </th>
-                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                <span>{items.email}</span>
-                                            </th>
+                                    return (
+                                        <>
+                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 ">
+                                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    <span>{items.Username}</span>
+                                                </th>
+                                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    <span>{items.email}</span>
+                                                </th>
 
-                                            <td class="px-6 py-4 text-right">
-                                                <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" onClick={() => deleteusers(items._id)} >Delete</a>
-                                            </td>
-                                        </tr>
+                                                <td class="px-6 py-4 text-right">
+                                                    <a class="font-medium text-blue-600 dark:text-blue-500 hover:underline" onClick={() => deleteusers(items._id)} >Delete</a>
+                                                </td>
+                                            </tr>
 
 
-                                    </>
-                                )
-                            })
+                                        </>
+                                    )
+                                })
+                                :
+                                <p className=' absolute top-0  my-20 text-center min-w-[100%] h-[60dvh] items-center justify-center flex text-3xl font-semibold' >Loading...</p>
                         }
 
 
